@@ -1,0 +1,7 @@
+name: Man10NewFarmPlugin
+version: @version@
+main: man10newfarmplugin.man10newfarmplugin.MNF
+api-version: 1.16
+
+commands:
+  mnf:

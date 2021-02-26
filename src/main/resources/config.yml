@@ -1,0 +1,24 @@
+mysql:
+  host: localhosr
+  user: root
+  pass: pass
+  port: 3306
+  db: Man10Farm
+
+
+
+
+
+farm:
+  cropbreakitem:
+  threadroop: 30
+
+  No1:
+    seed:
+    seedm:
+    crop:
+    cropblock:
+    crophead:
+    canb:
+    growc:
+    ll:
