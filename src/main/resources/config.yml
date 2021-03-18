@@ -1,5 +1,5 @@
 mysql:
-  host: localhosr
+  host: localhost
   user: root
   pass: pass
   port: 3306
@@ -10,15 +10,16 @@ mysql:
 
 
 farm:
-  cropbreakitem:
+
   threadroop: 30
 
   No1:
     seed:
-    seedm:
     crop:
+    othercrops:
+      - asdmfamn:1:4:10
     cropblock:
-    crophead:
     canb:
     growc:
     ll:
+    cropbreakitem:

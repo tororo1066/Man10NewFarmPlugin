@@ -1,11 +1,12 @@
 package man10newfarmplugin.man10newfarmplugin
 
+import man10newfarmplugin.man10newfarmplugin.MNF.Companion.d
 import man10newfarmplugin.man10newfarmplugin.MNF.Companion.da
 import man10newfarmplugin.man10newfarmplugin.MNF.Companion.plugin
 import man10newfarmplugin.man10newfarmplugin.MNF.Companion.prefix
+import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Block
-import org.bukkit.block.Skull
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.io.BukkitObjectInputStream
@@ -18,6 +19,10 @@ import java.io.ByteArrayOutputStream
 object Util {
 
     var wait = hashMapOf<Player,Boolean>()
+
+    fun per(i : Double): Boolean {
+        return Math.random() <= i/100
+    }
 
     fun changeint(s: String): Int? {
         try {
@@ -40,73 +45,46 @@ object Util {
     }
 
     fun plantcrops(clicked: Block, item: ItemStack, p: Player) {
-
-
-        var c = 1
-        while (plugin.config.isSet("farm.No$c")) {
-            if (plugin.config.getString("farm.No$c.seed") == itemToBase64(item)) {
-                if (plugin.config.getString("farm.No$c.canb") == clicked.type.toString()) {
-                    if (clicked.location.add(0.0,1.0,0.0).block.lightLevel.toInt() >= plugin.config.getInt("farm.No$c.ll")){
-                        wait[p] = true
-                        clicked.type = Material.FARMLAND
-                        clicked.location.add(0.0,1.0,0.0).block.type = Material.valueOf(plugin.config.getString("farm.No$c.seedm")!!)
-                        p.sendMessage(prefix + "${item.itemMeta.displayName}を植えました")
-                        da[clicked.location.add(0.0,1.0,0.0)] = plugin.config.getString("farm.No$c.crop")!!
-
-
-                        wait[p] = false
-                        return
-                    }else{
-                        if (wait[p] != true) {
-                            p.sendMessage(prefix + "光の強さが足りません！")
-                            return
-                        }
-                    }
-                } else {
-                    if (wait[p] != true) {
-                        p.sendMessage(prefix + "適切な場所に植えてください！")
-                        return
-                    }
-
-
-                }
+        if (!d.seed.contains(item))return
+        val i = d.seed.indexOf(item)
+        if (clicked.type == d.canb[i]){
+            if (clicked.location.add(0.0,1.0,0.0).block.lightLevel >= d.ll[i].toByte()){
+                clicked.type = Material.FARMLAND
+                clicked.location.add(0.0,1.0,0.0).block.type = Material.WHEAT
+                da[clicked.location.add(0.0,1.0,0.0)] = d.crop[i]
+                p.sendMessage("debug message 1")
+                return
+            }else{
+                p.sendMessage(prefix + "明かりの強さが足りません！")
+                return
             }
-            c++
+        }else{
+            p.sendMessage(prefix + "植える場所が適切ではありません！")
+            return
         }
-
-        return
     }
 
 
 
-    fun addcrops(i: Int, seed : ItemStack, seedm : Material, crop : ItemStack, cropblock : Material, canb : Material, growc : Int, ll : Int, p: Player) {
-
-        plugin.config.set("farm.No$i.seed", itemToBase64(seed))
-        when(seedm){
-            Material.POTATO-> plugin.config.set("farm.No$i.seedm", "POTATOES")
-            Material.CARROT-> plugin.config.set("farm.No$i.seedm", "CARROTS")
-            Material.SWEET_BERRIES-> plugin.config.set("farm.No$i.seedm", "SWEET_BERRY_BUSH")
-            Material.BEETROOT-> plugin.config.set("farm.No$i.seedm", "BEETROOTS")
-            Material.MELON-> plugin.config.set("farm.No$i.seedm", "MELON_STEM")
-            Material.PUMPKIN-> plugin.config.set("farm.No$i.seedm", "PUMPKIN_STEM")
-
-            else->plugin.config.set("farm.No$i.seedm", seedm.name)
-        }
 
 
-        plugin.config.set("farm.No$i.crop", itemToBase64(crop))
-        if (cropblock == Material.PLAYER_HEAD){
-            val head = cropblock as Skull
-            plugin.config.set("farm.No$i.cropblock", cropblock.name)
-            plugin.config.set("farm.No$i.crophead",head.owningPlayer?.uniqueId)
-        }else{
-            plugin.config.set("farm.No$i.cropblock", cropblock.name)
-        }
-        plugin.config.set("farm.No$i.canb",canb.name)
-        plugin.config.set("farm.No$i.growc",growc)
-        plugin.config.set("farm.No$i.ll",ll)
-        plugin.saveConfig()
-        p.sendMessage(prefix + "コンフィグへの書き込みが完了しました")
+
+    fun removecrop(i : Int){
+        d.cropblock.removeAt(i)
+        d.crop.removeAt(i)
+        d.id.removeAt(i)
+        d.growc.removeAt(i)
+        d.canb.removeAt(i)
+        d.othercropschance.removeAt(i)
+        d.othercrops.removeAt(i)
+        d.seed.removeAt(i)
+        d.cropbreakitem.removeAt(i)
+        d.ll.removeAt(i)
+    }
+
+    fun gotcrop(loc : Location){
+        if (!da.containsKey(loc))return
+        da.remove(loc)
     }
 
 
