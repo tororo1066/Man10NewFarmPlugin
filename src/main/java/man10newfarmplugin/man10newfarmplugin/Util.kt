@@ -18,8 +18,6 @@ import java.io.ByteArrayOutputStream
 
 object Util {
 
-    var wait = hashMapOf<Player,Boolean>()
-
     fun per(i : Double): Boolean {
         return Math.random() <= i/100
     }
@@ -37,7 +35,7 @@ object Util {
         var count = 1
         while (plugin.config.isSet("farm.No$count")){
             if (i == count){
-                p.inventory.setItemInMainHand(plugin.config.getString("farm.No$count.seed")?.let { itemFromBase64(it) })
+                p.inventory.setItemInMainHand(plugin.config.getItemStack("farm.No$count.seed"))
                 return
             }
             count++
@@ -45,10 +43,12 @@ object Util {
     }
 
     fun plantcrops(clicked: Block, item: ItemStack, p: Player) {
+        item.amount = 1
         if (!d.seed.contains(item))return
         val i = d.seed.indexOf(item)
         if (clicked.type == d.canb[i]){
             if (clicked.location.add(0.0,1.0,0.0).block.lightLevel >= d.ll[i].toByte()){
+
                 clicked.type = Material.FARMLAND
                 clicked.location.add(0.0,1.0,0.0).block.type = Material.WHEAT
                 da[clicked.location.add(0.0,1.0,0.0)] = d.crop[i]
@@ -83,7 +83,6 @@ object Util {
     }
 
     fun gotcrop(loc : Location){
-        if (!da.containsKey(loc))return
         da.remove(loc)
     }
 

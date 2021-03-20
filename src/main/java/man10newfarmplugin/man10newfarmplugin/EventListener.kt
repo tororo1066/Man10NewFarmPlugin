@@ -14,6 +14,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.block.BlockBreakEvent
+import org.bukkit.event.block.BlockFromToEvent
 import org.bukkit.event.block.BlockGrowEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
@@ -38,6 +39,8 @@ object EventListener : Listener {
         if (e.block.type != Material.WHEAT)return
         val age = e.newState.blockData as Ageable
         val i = d.crop.indexOf(da[e.block.location])
+        Bukkit.broadcastMessage(e.block.type.toString())
+        e.newState.block.type = Material.LAPIS_BLOCK
         if (age.age == age.maximumAge){
             if (d.cropblock[i] is String){
                 val m = Material.PLAYER_HEAD
@@ -46,7 +49,7 @@ object EventListener : Listener {
                 e.block.type = m
                 return
             }else{
-                e.block.type = d.cropblock[i] as Material
+
                 return
             }
 
@@ -79,6 +82,15 @@ object EventListener : Listener {
     }
 
 
+    @EventHandler
+    fun breakblockbyfiuld(e : BlockFromToEvent){
+        if (e.toBlock.type == Material.WHEAT){
+            e.isCancelled = true
+        }
+        if (da.containsKey(e.toBlock.location)){
+            e.isCancelled = true
+        }
+    }
 
 
 

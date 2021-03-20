@@ -95,6 +95,7 @@ class MNF : JavaPlugin() {
                 d.othercropsdropchance.add(listt)
             }
             c++
+            d.threadroop = config.getInt("farm.threadroop")
 
             val mysql = MySQLManager(plugin, "farmfirstload")
             val rs = mysql.query("SELECT * FROM crops_location;")
@@ -103,12 +104,15 @@ class MNF : JavaPlugin() {
             }
             rs?.close()
             mysql.close()
+
             object : BukkitRunnable() {
                 override fun run() {
-                    mysql.execute("DELETE FROM crops_location;")
+                    val mysql2 = MySQLManager(plugin,"farmload")
+                    mysql2.execute("DELETE FROM crops_location;")
                     for (i in da) {
-                        mysql.execute("INSERT INTO crops_location (x, y, z, world, crops) VALUES (${i.key.x}, ${i.key.y}, ${i.key.z}, '${i.key.world.uid}', '${itemToBase64(i.value)}');")
+                        mysql2.execute("INSERT INTO crops_location (x, y, z, world, crops) VALUES (${i.key.x}, ${i.key.y}, ${i.key.z}, '${i.key.world.uid}', '${itemToBase64(i.value)}');")
                     }
+                    mysql2.close()
                 }
             }.runTaskTimer(plugin, (d.threadroop * 20 * 60).toLong(), (d.threadroop * 20 * 60).toLong())
 
