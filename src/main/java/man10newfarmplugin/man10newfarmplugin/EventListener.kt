@@ -5,6 +5,7 @@ import man10newfarmplugin.man10newfarmplugin.MNF.Companion.da
 import man10newfarmplugin.man10newfarmplugin.MNF.Companion.plugin
 import man10newfarmplugin.man10newfarmplugin.MNF.Companion.prefix
 import man10newfarmplugin.man10newfarmplugin.Util.gotcrop
+import man10newfarmplugin.man10newfarmplugin.Util.parm
 import man10newfarmplugin.man10newfarmplugin.Util.per
 import man10newfarmplugin.man10newfarmplugin.Util.plantcrops
 import org.bukkit.Bukkit
@@ -49,7 +50,10 @@ object EventListener : Listener {
                 val m = Material.PLAYER_HEAD
                 val mdata = m.data as Skull
                 mdata.setOwningPlayer(Bukkit.getOfflinePlayer(UUID.fromString(d.cropblock[i] as String)))
-                e.block.type = m
+                Bukkit.getScheduler().runTask(plugin, Runnable {
+                    e.block.type = m
+                    return@Runnable
+                })
                 return
             }else{
                 Bukkit.getScheduler().runTask(plugin, Runnable {
@@ -73,7 +77,7 @@ object EventListener : Listener {
 
         e.isCancelled = true
         val i = d.crop.indexOf(da[e.block.location])
-        if (e.player.inventory.itemInMainHand == d.cropbreakitem[i] && !e.player.hasPermission("admin")){
+        if (e.player.inventory.itemInMainHand == d.cropbreakitem[i] && !parm(e.player)){
             e.player.sendMessage(prefix + "この作物は壊すのに別のアイテムが必要です！")
             return
         }
