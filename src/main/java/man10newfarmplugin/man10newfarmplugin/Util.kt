@@ -36,6 +36,8 @@ object Util {
         while (plugin.config.isSet("farm.No$count")){
             if (i == count){
                 p.inventory.setItemInMainHand(plugin.config.getItemStack("farm.No$count.seed"))
+                p.sendMessage(prefix + "種を付与しました")
+                plugin.server.logger.info("${p.name}に${plugin.config.getItemStack("farm.No$count.seed")?.itemMeta?.displayName}を付与しました")
                 return
             }
             count++
@@ -43,16 +45,18 @@ object Util {
     }
 
     fun plantcrops(clicked: Block, item: ItemStack, p: Player) {
-        item.amount = 1
-        if (!d.seed.contains(item))return
-        val i = d.seed.indexOf(item)
+        val item2 = ItemStack(item)
+        item2.amount = 1
+        if (!d.seed.contains(item2))return
+        val i = d.seed.indexOf(item2)
         if (clicked.type == d.canb[i]){
             if (clicked.location.add(0.0,1.0,0.0).block.lightLevel >= d.ll[i].toByte()){
 
                 clicked.type = Material.FARMLAND
                 clicked.location.add(0.0,1.0,0.0).block.type = Material.WHEAT
+                item.amount = item.amount-1
                 da[clicked.location.add(0.0,1.0,0.0)] = d.crop[i]
-                p.sendMessage("debug message 1")
+                p.sendMessage("${item.itemMeta.displayName}を植えました")
                 return
             }else{
                 p.sendMessage(prefix + "明かりの強さが足りません！")
@@ -66,21 +70,10 @@ object Util {
 
 
 
-
-
-
-    fun removecrop(i : Int){
-        d.cropblock.removeAt(i)
-        d.crop.removeAt(i)
-        d.id.removeAt(i)
-        d.growc.removeAt(i)
-        d.canb.removeAt(i)
-        d.othercropschance.removeAt(i)
-        d.othercrops.removeAt(i)
-        d.seed.removeAt(i)
-        d.cropbreakitem.removeAt(i)
-        d.ll.removeAt(i)
+    fun parm(p : Player): Boolean {
+        return p.isOp || p.hasPermission("admin")
     }
+
 
     fun gotcrop(loc : Location){
         da.remove(loc)

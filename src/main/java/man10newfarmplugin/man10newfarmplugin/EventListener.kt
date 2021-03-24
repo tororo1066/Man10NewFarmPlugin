@@ -3,6 +3,7 @@ package man10newfarmplugin.man10newfarmplugin
 import man10newfarmplugin.man10newfarmplugin.MNF.Companion.d
 import man10newfarmplugin.man10newfarmplugin.MNF.Companion.da
 import man10newfarmplugin.man10newfarmplugin.MNF.Companion.plugin
+import man10newfarmplugin.man10newfarmplugin.MNF.Companion.prefix
 import man10newfarmplugin.man10newfarmplugin.Util.gotcrop
 import man10newfarmplugin.man10newfarmplugin.Util.per
 import man10newfarmplugin.man10newfarmplugin.Util.plantcrops
@@ -10,6 +11,9 @@ import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.Skull
 import org.bukkit.block.data.Ageable
+import org.bukkit.entity.ArmorStand
+import org.bukkit.entity.Entity
+import org.bukkit.entity.EntityType
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
@@ -17,6 +21,7 @@ import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockFromToEvent
 import org.bukkit.event.block.BlockGrowEvent
 import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import java.util.*
@@ -39,8 +44,6 @@ object EventListener : Listener {
         if (e.block.type != Material.WHEAT)return
         val age = e.newState.blockData as Ageable
         val i = d.crop.indexOf(da[e.block.location])
-        Bukkit.broadcastMessage(e.block.type.toString())
-        e.newState.block.type = Material.LAPIS_BLOCK
         if (age.age == age.maximumAge){
             if (d.cropblock[i] is String){
                 val m = Material.PLAYER_HEAD
@@ -49,8 +52,10 @@ object EventListener : Listener {
                 e.block.type = m
                 return
             }else{
-
-                return
+                Bukkit.getScheduler().runTask(plugin, Runnable {
+                    e.block.type = d.cropblock[i] as Material
+                    return@Runnable
+                })
             }
 
 
@@ -65,8 +70,13 @@ object EventListener : Listener {
             val age = e.block.blockData as Ageable
             if (age.age != age.maximumAge)return
         }
+
         e.isCancelled = true
         val i = d.crop.indexOf(da[e.block.location])
+        if (e.player.inventory.itemInMainHand == d.cropbreakitem[i] && !e.player.hasPermission("admin")){
+            e.player.sendMessage(prefix + "この作物は壊すのに別のアイテムが必要です！")
+            return
+        }
         e.block.world.dropItemNaturally(e.block.location,d.crop[i])
         if (!d.othercrops[i].contains(ItemStack(Material.AIR))) {
             for (int in 0 until d.othercrops[i].size) {
@@ -92,6 +102,10 @@ object EventListener : Listener {
         }
     }
 
+    @EventHandler
+    fun move(e : PlayerMoveEvent){
+
+    }
 
 
 }
