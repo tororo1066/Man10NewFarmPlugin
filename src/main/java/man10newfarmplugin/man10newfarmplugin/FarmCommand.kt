@@ -9,11 +9,13 @@ import man10newfarmplugin.man10newfarmplugin.Util.givecrops
 import man10newfarmplugin.man10newfarmplugin.Util.itemToBase64
 import man10newfarmplugin.man10newfarmplugin.Util.parm
 import org.bukkit.Material
+import org.bukkit.block.Skull
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.meta.SkullMeta
 import java.util.*
 
 object FarmCommand : CommandExecutor {
@@ -25,6 +27,19 @@ object FarmCommand : CommandExecutor {
         }
 
         when(args[0]){
+            "help"->{
+                if (sender !is Player)return true
+                if (!parm(sender))return true
+                sender.sendMessage("§a/mnf add (番号) (育つ確率1~100) (必要な光level)")
+                sender.sendMessage("§aホットバーの左から順 種、出てくる作物、作物ブロック、植えられるブロック、作物を壊せるアイテム")
+                sender.sendMessage("§a作物を追加します")
+                sender.sendMessage("§b/mnf (addothercrops or addoc) (番号) (個数の最小値) (個数の最大値) (確率1~100)")
+                sender.sendMessage("§b手に持っているアイテムを他の作物として追加します")
+                sender.sendMessage("§d/mnf (resetothercrops or resetoc) (番号) othercropsを消します")
+                sender.sendMessage("§e/mnf (givecrops、give、gc) (番号) 種を入手します")
+
+            }
+
             "add"->{
                 if (sender !is Player)return true
                 if (!parm(sender))return true
@@ -33,13 +48,17 @@ object FarmCommand : CommandExecutor {
                 plugin.config.set("farm.No${changeint(args[1]) ?:return true}.seed",inv.getItem(0))
                 plugin.config.set("farm.No${changeint(args[1])}.crop",inv.getItem(1))
                 plugin.config.set("farm.No${changeint(args[1])}.cropblock",inv.getItem(2)?.type?.name)
+                if (inv.getItem(2)?.type == Material.PLAYER_HEAD){
+                    val item = inv.getItem(2)?.itemMeta as SkullMeta
+                    plugin.config.set("farm.No${changeint(args[1])}.crophead",item.owningPlayer?.uniqueId.toString())
+                }
                 plugin.config.set("farm.No${changeint(args[1])}.canb",inv.getItem(3)?.type?.name)
                 plugin.config.set("farm.No${changeint(args[1])}.cropbreakitem",inv.getItem(4))
                 plugin.config.set("farm.No${changeint(args[1])}.growc", changeint(args[2]))
                 plugin.config.set("farm.No${changeint(args[1])}.ll", changeint(args[3]))
                 plugin.saveConfig()
                 sender.sendMessage(prefix + "configの更新が完了しました！")
-                sender.sendMessage(prefix + "")
+                sender.sendMessage("$prefix/mnf reloadで適応してください")
                 return true
             }
             "addothercrops","addoc"->{
@@ -52,6 +71,7 @@ object FarmCommand : CommandExecutor {
                 plugin.config.set("farm.No${changeint(args[1])}.othercrops",l)
                 plugin.saveConfig()
                 sender.sendMessage(prefix + "othercropsの追加が完了しました")
+                sender.sendMessage("$prefix/mnf reloadで適応してください")
                 return true
             }
             "resetothercrops","resetoc"->{
@@ -62,6 +82,7 @@ object FarmCommand : CommandExecutor {
                 l.clear()
                 plugin.config.set("farm.No${changeint(args[1])}.othercrops",l)
                 sender.sendMessage(prefix + "othercropsを削除しました")
+                sender.sendMessage("$prefix/mnf reloadで適応してください")
                 return true
             }
             "givecrops","give","gc"->{
@@ -69,55 +90,6 @@ object FarmCommand : CommandExecutor {
                 if (sender !is Player)return true
                 if (!parm(sender))return true
                 changeint(args[1])?.let { givecrops(it,sender) }
-            }
-            "reload"-> {
-                sender.sendMessage(prefix + "この処理には時間がかかる可能性があります")
-                Thread{
-                    var c = 1
-                    while (plugin.config.isSet("farm.No$c")) {
-                        d.id.add(c)
-                        plugin.config.getItemStack("farm.No$c.seed")?.let { d.seed.add(it) }
-                        plugin.config.getItemStack("farm.No$c.crop")?.let { d.crop.add(it) }
-
-                        if (plugin.config.getString("farm.No$c.cropblock") == "PLAYER_HEAD") {
-                            d.cropblock.add(UUID.fromString(plugin.config.getString("farm.No$c.crophead")))
-                        } else {
-                            plugin.config.getString("farm.No$c.cropblock")?.let { Material.valueOf(it) }?.let { d.cropblock.add(it) }
-                        }
-
-                        plugin.config.getString("farm.No$c.canb")?.let { Material.valueOf(it) }?.let { d.canb.add(it) }
-                        d.growc.add(plugin.config.getInt("farm.No$c.growc"))
-                        d.ll.add(plugin.config.getInt("farm.No$c.ll"))
-                        plugin.config.getItemStack("farm.No$c.cropbreakitem")?.let { d.cropbreakitem.add(it) }
-                        val li = arrayListOf<ItemStack>()
-                        val list = arrayListOf<IntRange>()
-                        val listt = arrayListOf<Int>()
-                        if (plugin.config.isSet("farm.No$c.othercrops")) {
-                            for (i in plugin.config.getStringList("farm.No$c.othercrops")) {
-                                val sp = i.split(":")
-                                Util.itemFromBase64(sp[0])?.let { li.add(it) }
-                                list.add(IntRange(sp[1].toInt(), sp[2].toInt()))
-                                listt.add(sp[3].toInt())
-                            }
-                            d.othercrops.add(li)
-                            d.othercropschance.add(list)
-                            d.othercropsdropchance.add(listt)
-                        } else {
-                            li.add(ItemStack(Material.AIR))
-                            list.add(0..0)
-                            listt.add(0)
-                            d.othercrops.add(li)
-                            d.othercropschance.add(list)
-                            d.othercropsdropchance.add(listt)
-                        }
-                        c++
-                        d.threadroop = plugin.config.getInt("farm.threadroop")
-
-                    }
-                    return@Thread
-                }.start()
-                sender.sendMessage(prefix + "読み込みが完了しました")
-                return true
             }
 
 

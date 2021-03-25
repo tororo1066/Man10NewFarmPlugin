@@ -36,22 +36,25 @@ object EventListener : Listener {
     fun click(e: PlayerInteractEvent) {
         if (e.hand == EquipmentSlot.OFF_HAND) return
         if (e.clickedBlock == null || e.action != Action.RIGHT_CLICK_BLOCK) return
-        e.player.sendMessage(e.action.toString())
+        if (e.clickedBlock?.type == Material.FARMLAND && e.player.inventory.itemInMainHand.type == Material.WHEAT_SEEDS)e.isCancelled = true
         plantcrops(e.clickedBlock!!, e.player.inventory.itemInMainHand, e.player)
     }
 
     @EventHandler
     fun growth(e: BlockGrowEvent) {
+
         if (e.block.type != Material.WHEAT)return
         val age = e.newState.blockData as Ageable
+        plugin.server.logger.info(da.keys.toString() + " " + e.block.location.toString())
         val i = d.crop.indexOf(da[e.block.location])
+        plugin.server.logger.info("${d.growc[i]}")
         if (age.age == age.maximumAge){
-            if (d.cropblock[i] is String){
-                val m = Material.PLAYER_HEAD
-                val mdata = m.data as Skull
-                mdata.setOwningPlayer(Bukkit.getOfflinePlayer(UUID.fromString(d.cropblock[i] as String)))
+            if (d.cropblock[i] is UUID){
                 Bukkit.getScheduler().runTask(plugin, Runnable {
-                    e.block.type = m
+                    e.block.type = Material.PLAYER_HEAD
+                    val meta = e.block.state as Skull
+                    meta.setOwningPlayer(Bukkit.getOfflinePlayer(d.cropblock[i] as UUID))
+                    meta.update()
                     return@Runnable
                 })
                 return
@@ -63,12 +66,12 @@ object EventListener : Listener {
             }
 
 
-        }else if (Random.nextInt(1..d.growc[i]) != 1)e.isCancelled = true
+        }else if (!per(d.growc[i].toDouble()))e.isCancelled = true
     }
 
     @EventHandler
     fun breakblock(e : BlockBreakEvent) {
-
+        if (da.containsKey(e.block.location.add(0.0,1.0,0.0)))e.isCancelled = true
         if (!da.containsKey(e.block.location))return
         if (e.block.type == Material.WHEAT){
             val age = e.block.blockData as Ageable

@@ -43,7 +43,7 @@ class MNF : JavaPlugin() {
     }
 
     companion object{
-        const val prefix = ""
+        const val prefix = "§e[§dMan10§6New§aFarm§e]§f "
         lateinit var plugin : MNF
         var da = hashMapOf<Location, ItemStack>()
         val d = Configdata()

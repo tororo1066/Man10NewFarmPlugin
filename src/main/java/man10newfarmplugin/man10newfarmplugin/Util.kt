@@ -37,7 +37,7 @@ object Util {
             if (i == count){
                 p.inventory.setItemInMainHand(plugin.config.getItemStack("farm.No$count.seed"))
                 p.sendMessage(prefix + "種を付与しました")
-                plugin.server.logger.info("${p.name}に${plugin.config.getItemStack("farm.No$count.seed")?.itemMeta?.displayName}を付与しました")
+                plugin.server.logger.info("${p.name}に${plugin.config.getItemStack("farm.No$count.seed")?.itemMeta?.displayName}($count)を付与しました")
                 return
             }
             count++
@@ -56,6 +56,7 @@ object Util {
                 clicked.location.add(0.0,1.0,0.0).block.type = Material.WHEAT
                 item.amount = item.amount-1
                 da[clicked.location.add(0.0,1.0,0.0)] = d.crop[i]
+                if (!item.hasItemMeta()) return
                 p.sendMessage("${item.itemMeta.displayName}を植えました")
                 return
             }else{
