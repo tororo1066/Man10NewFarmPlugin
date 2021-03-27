@@ -5,6 +5,7 @@ import man10newfarmplugin.man10newfarmplugin.Util.itemToBase64
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
+import org.bukkit.block.Skull
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.inventory.ItemStack
@@ -17,30 +18,6 @@ import kotlin.collections.ArrayList
 
 class MNF : JavaPlugin() {
 
-    override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): MutableList<String> {
-        val com = ArrayList<String>()
-        val compl = ArrayList<String>()
-        if (args.size == 1){
-            if (sender.hasPermission("admin")){
-                com.add("add")
-                StringUtil.copyPartialMatches(args[0], com,compl)
-            }
-        }
-        if (args.size == 2){
-            if (sender.hasPermission("admin")){
-                if (args[0] == "add"){
-
-                }
-                if (args[0] == "addothercrops" || args[0] == "addoc"){
-
-                }
-                StringUtil.copyPartialMatches(args[1], com,compl)
-            }
-        }
-
-        com.sort()
-        return com
-    }
 
     companion object{
         const val prefix = "§e[§dMan10§6New§aFarm§e]§f "
@@ -107,12 +84,30 @@ class MNF : JavaPlugin() {
 
             object : BukkitRunnable() {
                 override fun run() {
-                    val mysql2 = MySQLManager(plugin,"farmload")
-                    mysql2.execute("DELETE FROM crops_location;")
-                    for (i in da) {
-                        mysql2.execute("INSERT INTO crops_location (x, y, z, world, crops) VALUES (${i.key.x}, ${i.key.y}, ${i.key.z}, '${i.key.world.uid}', '${itemToBase64(i.value)}');")
+                    if (da.size != 0) {
+                        val mysql2 = MySQLManager(plugin, "farmload")
+                        mysql2.execute("DELETE FROM crops_location;")
+                        for (i in da) {
+                            val ii = d.crop.indexOf(i.value)
+                            if (i.key.block.type == Material.WHEAT){
+                                mysql2.execute("INSERT INTO crops_location (x, y, z, world, crops) VALUES (${i.key.x}, ${i.key.y}, ${i.key.z}, '${i.key.world.uid}', '${itemToBase64(i.value)}');")
+                                continue
+                            }
+                            if (d.cropblock[ii] is UUID){
+                                if (i.key.block.type != Material.PLAYER_HEAD)continue
+                                val data = i.key.block.state as Skull
+                                if (!data.hasOwner() && data.owningPlayer?.uniqueId != d.cropblock[ii])continue
+                                mysql2.execute("INSERT INTO crops_location (x, y, z, world, crops) VALUES (${i.key.x}, ${i.key.y}, ${i.key.z}, '${i.key.world.uid}', '${itemToBase64(i.value)}');")
+                                continue
+                            }else{
+                                if (i.key.block.type != d.cropblock[ii])continue
+                                mysql2.execute("INSERT INTO crops_location (x, y, z, world, crops) VALUES (${i.key.x}, ${i.key.y}, ${i.key.z}, '${i.key.world.uid}', '${itemToBase64(i.value)}');")
+                                continue
+                            }
+
+                        }
+                        mysql2.close()
                     }
-                    mysql2.close()
                 }
             }.runTaskTimer(plugin, (d.threadroop * 20 * 60).toLong(), (d.threadroop * 20 * 60).toLong())
 
@@ -121,12 +116,30 @@ class MNF : JavaPlugin() {
     }
 
     override fun onDisable() {
-            val mysql = MySQLManager(plugin, "farmload")
-            mysql.execute("DELETE FROM crops_location;")
-            for (i in da){
-                mysql.execute("INSERT INTO crops_location (x, y, z, world, crops) VALUES (${i.key.x}, ${i.key.y}, ${i.key.z}, '${i.key.world.uid}', '${itemToBase64(i.value)}');")
-            }
+        if (da.size != 0) {
+            val mysql2 = MySQLManager(plugin, "farmload")
+            mysql2.execute("DELETE FROM crops_location;")
+            for (i in da) {
+                val ii = d.crop.indexOf(i.value)
+                if (i.key.block.type == Material.WHEAT){
+                    mysql2.execute("INSERT INTO crops_location (x, y, z, world, crops) VALUES (${i.key.x}, ${i.key.y}, ${i.key.z}, '${i.key.world.uid}', '${itemToBase64(i.value)}');")
+                    continue
+                }
+                if (d.cropblock[ii] is UUID){
+                    if (i.key.block.type != Material.PLAYER_HEAD)continue
+                    val data = i.key.block.state as Skull
+                    if (!data.hasOwner() && data.owningPlayer?.uniqueId != d.cropblock[ii])continue
+                    mysql2.execute("INSERT INTO crops_location (x, y, z, world, crops) VALUES (${i.key.x}, ${i.key.y}, ${i.key.z}, '${i.key.world.uid}', '${itemToBase64(i.value)}');")
+                    continue
+                }else{
+                    if (i.key.block.type != d.cropblock[ii])continue
+                    mysql2.execute("INSERT INTO crops_location (x, y, z, world, crops) VALUES (${i.key.x}, ${i.key.y}, ${i.key.z}, '${i.key.world.uid}', '${itemToBase64(i.value)}');")
+                    continue
+                }
 
+            }
+            mysql2.close()
+        }
     }
 
 

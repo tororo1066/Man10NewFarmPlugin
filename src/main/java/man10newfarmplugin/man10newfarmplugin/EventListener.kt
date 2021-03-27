@@ -75,7 +75,10 @@ object EventListener : Listener {
         if (!da.containsKey(e.block.location))return
         if (e.block.type == Material.WHEAT){
             val age = e.block.blockData as Ageable
-            if (age.age != age.maximumAge)return
+            if (age.age != age.maximumAge){
+                gotcrop(e.block.location)
+                return
+            }
         }
 
         e.isCancelled = true

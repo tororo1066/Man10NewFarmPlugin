@@ -81,6 +81,7 @@ object FarmCommand : CommandExecutor {
                 val l = plugin.config.getStringList("farm.No${changeint(args[1]) ?:return true}.othercrops")
                 l.clear()
                 plugin.config.set("farm.No${changeint(args[1])}.othercrops",l)
+                plugin.saveConfig()
                 sender.sendMessage(prefix + "othercropsを削除しました")
                 sender.sendMessage("$prefix/mnf reloadで適応してください")
                 return true
