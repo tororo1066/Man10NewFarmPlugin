@@ -1,9 +1,6 @@
 package man10newfarmplugin.man10newfarmplugin
 
-import man10newfarmplugin.man10newfarmplugin.MNF.Companion.d
-import man10newfarmplugin.man10newfarmplugin.MNF.Companion.da
-import man10newfarmplugin.man10newfarmplugin.MNF.Companion.plugin
-import man10newfarmplugin.man10newfarmplugin.MNF.Companion.prefix
+import man10newfarmplugin.man10newfarmplugin.MNF.Companion
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Block
@@ -17,6 +14,11 @@ import java.io.ByteArrayOutputStream
 
 
 object Util {
+
+    private const val prefix = Companion.prefix
+    private val plugin = Companion.plugin
+    private val configdata = Companion.configdata
+    private val farmdata = Companion.farmdata
 
     fun per(i : Double): Boolean {
         return Math.random() <= i/100
@@ -32,30 +34,24 @@ object Util {
     }
 
     fun givecrops(i: Int, p: Player) {
-        var count = 1
-        while (plugin.config.isSet("farm.No$count")){
-            if (i == count){
-                p.inventory.setItemInMainHand(plugin.config.getItemStack("farm.No$count.seed"))
-                p.sendMessage(prefix + "種を付与しました")
-                plugin.server.logger.info("${p.name}に${plugin.config.getItemStack("farm.No$count.seed")?.itemMeta?.displayName}($count)を付与しました")
-                return
-            }
-            count++
-        }
+        p.inventory.setItemInMainHand(configdata.seed[i])
+        p.sendMessage(prefix + "種を付与しました")
+        plugin.server.logger.info("${p.name}に${configdata.seed[i].itemMeta.displayName}を付与しました")
+        return
     }
 
     fun plantcrops(clicked: Block, item: ItemStack, p: Player) {
         val item2 = ItemStack(item)
         item2.amount = 1
-        if (!d.seed.contains(item2))return
-        val i = d.seed.indexOf(item2)
-        if (clicked.type == d.canb[i]){
-            if (clicked.location.add(0.0,1.0,0.0).block.lightLevel >= d.ll[i].toByte()){
+        if (!configdata.seed.contains(item2))return
+        val i = configdata.seed.indexOf(item2)
+        if (clicked.type == configdata.canb[i]){
+            if (clicked.location.add(0.0,1.0,0.0).block.lightLevel >= configdata.ll[i].toByte()){
 
                 clicked.type = Material.FARMLAND
                 clicked.location.add(0.0,1.0,0.0).block.type = Material.WHEAT
                 item.amount = item.amount-1
-                da[clicked.location.add(0.0,1.0,0.0)] = d.crop[i]
+                farmdata[clicked.location.add(0.0,1.0,0.0)] = configdata.crop[i]
                 if (!item.hasItemMeta()) return
                 p.sendMessage("${item.itemMeta.displayName}を植えました")
                 return
@@ -72,12 +68,12 @@ object Util {
 
 
     fun parm(p : Player): Boolean {
-        return p.isOp || p.hasPermission("admin")
+        return p.isOp || p.hasPermission("man10farm.admin")
     }
 
 
     fun gotcrop(loc : Location){
-        da.remove(loc)
+        farmdata.remove(loc)
     }
 
 

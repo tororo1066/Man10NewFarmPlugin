@@ -1,24 +1,20 @@
 package man10newfarmplugin.man10newfarmplugin
 
-import man10newfarmplugin.man10newfarmplugin.MNF.Companion.d
-import man10newfarmplugin.man10newfarmplugin.MNF.Companion.da
-import man10newfarmplugin.man10newfarmplugin.MNF.Companion.plugin
-import man10newfarmplugin.man10newfarmplugin.MNF.Companion.prefix
+import man10newfarmplugin.man10newfarmplugin.MNF.Companion
 import man10newfarmplugin.man10newfarmplugin.Util.changeint
 import man10newfarmplugin.man10newfarmplugin.Util.givecrops
 import man10newfarmplugin.man10newfarmplugin.Util.itemToBase64
 import man10newfarmplugin.man10newfarmplugin.Util.parm
 import org.bukkit.Material
-import org.bukkit.block.Skull
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.SkullMeta
-import java.util.*
 
 object FarmCommand : CommandExecutor {
+    private const val prefix = Companion.prefix
+    private val plugin = Companion.plugin
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
 
@@ -58,7 +54,7 @@ object FarmCommand : CommandExecutor {
                 plugin.config.set("farm.No${changeint(args[1])}.ll", changeint(args[3]))
                 plugin.saveConfig()
                 sender.sendMessage(prefix + "configの更新が完了しました！")
-                sender.sendMessage("$prefix/mnf reloadで適応してください")
+                sender.sendMessage(prefix + "プラグインをリロードしてください")
                 return true
             }
             "addothercrops","addoc"->{
@@ -83,7 +79,7 @@ object FarmCommand : CommandExecutor {
                 plugin.config.set("farm.No${changeint(args[1])}.othercrops",l)
                 plugin.saveConfig()
                 sender.sendMessage(prefix + "othercropsを削除しました")
-                sender.sendMessage("$prefix/mnf reloadで適応してください")
+                sender.sendMessage(prefix + "プラグインをリロードしてください")
                 return true
             }
             "givecrops","give","gc"->{
